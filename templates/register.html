@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Project1 App --- REGISTER
+{% endblock %}
+
+{% block body %}
+<h2>Register here:</h2>
+<br>
+<form method="post">
+    <div class="form-group">
+        Username: <br>
+        <input class="form-control" name="username" placeholder="Username">
+    </div>
+    <div class="form-group">
+        Password: <br>
+        <input class="form-control" name="password" placeholder="Password">
+    </div>
+    <br>
+    <div class="form-group">
+        <button class="btn btn-primary" type="submit">Register</button>
+    </div>
+</form>
+{% if error %}
+<br>
+<div class="error"> {{ error }}</div>
+{% endif %}
+{% endblock %}

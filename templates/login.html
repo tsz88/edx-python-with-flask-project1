@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Project1 App --- Log in
+{% endblock %}
+
+{% block body %}
+<h2>Log in here:</h2>
+<br>
+<form method="post">
+    <div class="form-group">
+        <label for="username">Username:</label><br>
+        <input class="form-control" name="username" placeholder="Username">
+    </div>
+    <div class="form-group">
+        <label for="password">Password:</label><br>
+        <input class="form-control" name="password" placeholder="Password">
+    </div>
+    <br>
+    <div class="form-group">
+        <button class="btn btn-primary">Login</button>
+    </div>
+</form>
+{% if error %}
+<br>
+<div class="error"> {{ error }}</div>
+{% endif %}
+<br>
+<p>New to Project App 1? <a href="{{ url_for('register') }}">Register here.</a></p>
+{% endblock %}

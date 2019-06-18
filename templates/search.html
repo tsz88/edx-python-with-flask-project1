@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Search
+{% endblock %}
+
+
+{% block body %}
+<h2>Search for a book</h2>
+
+<br>
+<form method="POST">
+    <label for="title">Title: </label>
+    <input class="form-control" name="title" type="text">
+    <button type="submit">Search title or keywords in title</button>
+</form>
+{% endblock %}
