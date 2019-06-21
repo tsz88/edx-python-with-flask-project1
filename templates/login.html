@@ -7,7 +7,7 @@ Project1 App --- Log in
 {% block body %}
 <h2>Log in here:</h2>
 <br>
-<form method="post">
+<form method="post" action="{{ url_for('login') }}">
     <div class="form-group">
         <label for="username">Username:</label><br>
         <input class="form-control" name="username" placeholder="Username">
@@ -21,10 +21,6 @@ Project1 App --- Log in
         <button class="btn btn-primary">Login</button>
     </div>
 </form>
-{% if error %}
-<br>
-<div class="error"> {{ error }}</div>
-{% endif %}
 <br>
 <p>New to Project App 1? <a href="{{ url_for('register') }}">Register here.</a></p>
 {% endblock %}

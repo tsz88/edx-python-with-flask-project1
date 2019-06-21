@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Book details
+{% endblock %}
+
+{% block body %}
+<a class="float-right" href="{{ url_for('logout') }}">Logout</a>
+<h4>Book details</h4>
+
+<br>
+<h3>{{ book.title }}</h3>
+<h5>written by {{ book.author }}, published in {{ book.year }}</h5>
+
+<p>ISBN: {{ book.isbn }}</p>
+<br>
+<form method="post" action="{{ url_for('add_review', book_id=book.id) }}">
+    Write a reivew:<br>
+    <div class="form-group">
+        <label for="new-rating">Rating: </label>
+        <input class="form-control" type="number" min="1" max="5" name="new-rating" />
+    </div>
+    <div class="form-group">
+        <label for="new-opinion">Opinion</label>
+        <input class="form-control" type="text" name="new-opinion" />
+    </div>
+    <div class="form-group">
+        <button class="btn btn-primary">Send review</button>
+    </div>
+</form>
+<br>
+<h3>Reviews:</h3>
+<div>
+    {% for review in review_list %}
+    <table class="table-sm">
+        <thead>
+            <tr>
+                <th class="bg-primary text-white">Rated as {{ review.rating }} by {{ review.user_name }} </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ review.opinion }}</td>
+            </tr>
+        </tbody>
+    </table>
+    {% endfor %}
+</div>
+{% endblock %}

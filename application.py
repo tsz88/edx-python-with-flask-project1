@@ -48,7 +48,7 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
         if auth.authentication(username, password, db):
-            return render_template("search.html", username=username)
+            return redirect(url_for("search"))
         else:
             return render_template("login.html",
                                    error="Bad username or password.")
@@ -56,6 +56,88 @@ def login():
         return render_template("login.html")
 
 
+@app.route("/logout")
+def logout():
+    session['user_id'] = None
+    return render_template("login.html")
+
+
 @app.route("/")
 def main():
     return redirect(url_for("login"))
+
+
+@app.route("/search", methods=["GET", "POST"])
+def search():
+    if session["user_id"] is None:
+        return redirect(url_for("login"))
+    if request.method == "GET":
+        return render_template("search.html")
+
+    title_fragment = request.form.get("title")
+
+    if len(title_fragment) > 0:
+        result_list = db.execute(
+            "SELECT * FROM books WHERE title ILIKE '%" + title_fragment +
+            "' OR title ILIKE '" + title_fragment + "%'").fetchall()
+        book_list = []
+        for book_tuple in result_list:
+            book = parse_book_tuple_to_dictionary(book_tuple)
+            book_list.append(book)
+        return render_template("search.html", book_list=book_list)
+    else:
+        return render_template("search.html", error="No title specified.")
+
+
+@app.route("/book/<int:book_id>")
+def get_one_book(book_id):
+    book_tuple = db.execute(
+        "SELECT * FROM books WHERE books.id = :book_id",
+        {"book_id": book_id}).fetchone()
+    review_tuple_list = db.execute(
+        "SELECT reviews.rating, reviews.opinion, reviews.user_id, " +
+        "users.username FROM reviews JOIN users " +
+        "ON reviews.user_id = users.id WHERE book_id = :book_id",
+        {"book_id": book_id}).fetchall()
+    book = parse_book_tuple_to_dictionary(book_tuple)
+    review_list = []
+    for review_tuple in review_tuple_list:
+        review_list.append(get_all_review_info(review_tuple))
+    if session['user_id'] is not None:
+        return render_template("book_details.html", book=book,
+                               review_list=review_list)
+    else:
+        redirect(url_for("login"))
+
+
+@app.route("/book/<int:book_id>/add_review", methods=["POST"])
+def add_review(book_id):
+    if session['user_id'] is None:
+        redirect(url_for("login"))
+    new_rating = request.form.get("new-rating")
+    new_opinion = request.form.get("new-opinion")
+    db.execute(
+        "INSERT INTO reviews (rating, opinion, user_id, book_id) VALUES " +
+        "(:new_rating, :new_opinion, :user_id, :book_id)",
+        {"new_rating": new_rating, "new_opinion": new_opinion,
+         "user_id": session['user_id'][0], "book_id": book_id}
+    )
+    db.commit()
+    return redirect(url_for("get_one_book", book_id=book_id))
+
+
+def parse_book_tuple_to_dictionary(book_tuple):
+    book = {"id": book_tuple[0], "isbn": book_tuple[1],
+            "title": book_tuple[2], "author": book_tuple[3],
+            "year": book_tuple[4]}
+    return book
+
+
+def get_all_review_info(review_tuple):
+    review = {
+        "rating": review_tuple[0],
+        "opinion": review_tuple[1],
+        "user_id": review_tuple[2],
+        "user_name": review_tuple[3]
+    }
+    return review

@@ -6,12 +6,34 @@ Search
 
 
 {% block body %}
+<a class="float-right" href="{{ url_for('logout') }}">Logout</a>
 <h2>Search for a book</h2>
 
 <br>
 <form method="POST">
-    <label for="title">Title: </label>
+    <label for="title">Search title or keywords in title: </label>
     <input class="form-control" name="title" type="text">
-    <button type="submit">Search title or keywords in title</button>
+    <button class="btn btn-primary" type="submit">Search title</button>
 </form>
+<br>
+<br>
+<br>
+<table class="table">
+    <tr>
+        <th>ISBN</th>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Year</th>
+
+
+    </tr>
+    {% for book in book_list %}
+    <tr>
+        <td>{{ book.isbn }}</td>
+        <td><a href="{{ url_for('get_one_book', book_id=book.id) }}">{{ book.title }}</a></td>
+        <td>{{ book.author }}</td>
+        <td>{{ book.year }}</td>
+    </tr>
+    {% endfor %}
+</table>
 {% endblock %}
