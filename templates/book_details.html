@@ -6,30 +6,39 @@ Book details
 
 {% block body %}
 <a class="float-right" href="{{ url_for('logout') }}">Logout</a>
-<h4>Book details</h4>
-
-<br>
 <h3>{{ book.title }}</h3>
 <h5>written by {{ book.author }}, published in {{ book.year }}</h5>
 
 <p>ISBN: {{ book.isbn }}</p>
 <br>
+<div class="row">
+    <div class="col-md-2"></div>
+    <div class="card bg-light col-md-4">
+        <div class="card-body">
+            <p class="pl-1">Stats on <a href="https://www.goodreads.com">Goodreads</a>:</p>
+            <p class="pl-5">Average rating: {{ avg_rating }}</p>
+            <p class="pl-5">Review count: {{ rev_count }}</p>
+        </div>
+    </div>
+</div>
+<br>
 <form method="post" action="{{ url_for('add_review', book_id=book.id) }}">
-    Write a reivew:<br>
+    <h3>Write a reivew:</h3>
+    <br>
     <div class="form-group">
         <label for="new-rating">Rating: </label>
-        <input class="form-control" type="number" min="1" max="5" name="new-rating" />
+        <input class="form-control col-md-1" type="number" min="1" max="5" name="new-rating" />
     </div>
     <div class="form-group">
         <label for="new-opinion">Opinion</label>
-        <input class="form-control" type="text" name="new-opinion" />
+        <textarea class="form-control col-md-5" rows="3" type="text" name="new-opinion"></textarea>
     </div>
     <div class="form-group">
         <button class="btn btn-primary">Send review</button>
     </div>
 </form>
 <br>
-<h3>Reviews:</h3>
+<h3>Project 1 reviews:</h3>
 <div>
     {% for review in review_list %}
     <table class="table-sm">

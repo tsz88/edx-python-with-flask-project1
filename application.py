@@ -1,10 +1,13 @@
 import os
+import requests
+import json
 
 from flask import Flask, session, request, redirect, url_for, render_template
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 import auth
+
 
 app = Flask(__name__)
 
@@ -90,7 +93,7 @@ def search():
 
 
 @app.route("/book/<int:book_id>")
-def get_one_book(book_id):
+def get_one_book(book_id, error=None):
     book_tuple = db.execute(
         "SELECT * FROM books WHERE books.id = :book_id",
         {"book_id": book_id}).fetchone()
@@ -103,9 +106,19 @@ def get_one_book(book_id):
     review_list = []
     for review_tuple in review_tuple_list:
         review_list.append(get_all_review_info(review_tuple))
+
+    # goodreads review avg and counter
+    res = requests.get("https://www.goodreads.com/book/review_counts.json",
+                       params={"key": "HOX0NyHyNRNnfolsBkOMOA",
+                               "isbns": book["isbn"]}).json()
+    gr_review_count = res["books"][0]["reviews_count"]
+    gr_avg_rating = res["books"][0]["average_rating"]
+
     if session['user_id'] is not None:
         return render_template("book_details.html", book=book,
-                               review_list=review_list)
+                               review_list=review_list, error=error,
+                               avg_rating=gr_avg_rating,
+                               rev_count=gr_review_count)
     else:
         redirect(url_for("login"))
 
@@ -116,14 +129,21 @@ def add_review(book_id):
         redirect(url_for("login"))
     new_rating = request.form.get("new-rating")
     new_opinion = request.form.get("new-opinion")
-    db.execute(
-        "INSERT INTO reviews (rating, opinion, user_id, book_id) VALUES " +
-        "(:new_rating, :new_opinion, :user_id, :book_id)",
-        {"new_rating": new_rating, "new_opinion": new_opinion,
-         "user_id": session['user_id'][0], "book_id": book_id}
-    )
-    db.commit()
-    return redirect(url_for("get_one_book", book_id=book_id))
+    user_id = session.get('user_id')[0]
+    # search if review is new or already one exists by user
+    if db.execute("SELECT * FROM reviews WHERE reviews.user_id = :id",
+                  {"id": user_id}).rowcount > 0:
+        return get_one_book(book_id,
+                            error="One book -- one review.")
+    else:
+        db.execute(
+            "INSERT INTO reviews (rating, opinion, user_id, book_id) VALUES " +
+            "(:new_rating, :new_opinion, :user_id, :book_id)",
+            {"new_rating": new_rating, "new_opinion": new_opinion,
+             "user_id": session['user_id'][0], "book_id": book_id}
+        )
+        db.commit()
+        return redirect(url_for("get_one_book", book_id=book_id))
 
 
 def parse_book_tuple_to_dictionary(book_tuple):
